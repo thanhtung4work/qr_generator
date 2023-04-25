@@ -1,0 +1,74 @@
+{%extends "master.html"%}
+
+{% block title %}
+Welcome to qrcode-inator
+{% endblock %}
+
+{% block content %}
+<div>
+  <form action="get_qr" method="POST" class="form" onsubmit="return onFormSubmit(event)">
+    <h2 class="form-title">qrcode-inator</h2>
+    {% csrf_token %}
+    <div class="input-parent">
+      <label for="input_text">Text</label>
+      <input type="text" name="input_text" id="input_text">
+    </div>
+    
+    <button type="submit">generate</button>
+  </form>
+</div>
+
+<div class="modal" id="lightbox">
+  <span class="close cursor" onclick="closeModal()">&times;</span>
+  <div class="modal-content">
+
+    <div class="mySlides">
+      <div class="myImg" id="myImg">
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const input = document.querySelector('#input_text');
+  const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]')
+
+  function onFormSubmit(e) {
+    e.preventDefault();
+    let input_text = input.value
+
+    $.ajax({
+      type: 'POST',
+      url: '/get_qr',
+      async: false,
+      dataType: 'text',
+      data: {
+        'csrfmiddlewaretoken': csrf.value,
+        'input_text': input_text
+      },
+      success: (data_received, status) => {
+        var img = $('<img id="image_id">');
+        img.attr('src', 'data:image/png;charset=utf-8;base64,' + data_received);
+        $("#myImg").empty().append(img);
+        openModal();
+      },
+      error: (xhr, textStatus, errorThrown) => {
+        alert(errorThrown);
+      }
+    })
+  }
+
+  // Open the Modal
+  function openModal() {
+    document.getElementById("lightbox").style.display = "block";
+  }
+
+  // Close the Modal
+  function closeModal() {
+    document.getElementById("lightbox").style.display = "none";
+  }
+
+</script>
+{% endblock %}
